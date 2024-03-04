@@ -7,7 +7,7 @@
     <artifactId>healthcheck</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <packaging>war</packaging> <!-- Changed packaging to war -->
+    <packaging>war</packaging>
 
     <dependencies>
         <!-- Servlet API -->
