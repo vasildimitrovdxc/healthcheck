@@ -8,4 +8,4 @@ targetUrl=https://host:port/context <br/>
 timeout=10
 
 
-# healthcheck
+# healthcheck servlet
