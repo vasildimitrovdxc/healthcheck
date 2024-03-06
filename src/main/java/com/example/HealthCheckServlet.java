@@ -18,14 +18,16 @@ public class HealthCheckServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String configFilePath = "/opt/props/healthcheck.conf";
         BufferedReader reader = new BufferedReader(new FileReader(configFilePath));
-        String targetUrl = "";
+        String[] targetUrls = {};
         int timeout = 0;
         String line;
+        boolean allTargetsOK = true; // Flag to track the overall status
+        StringBuilder responseBody = new StringBuilder(); // Collect the response body
         while ((line = reader.readLine()) != null) {
             String[] parts = line.split("=");
             if (parts.length == 2) {
-                if (parts[0].trim().equals("targetUrl")) {
-                    targetUrl = parts[1].trim();
+                if (parts[0].trim().equals("targetUrls")) {
+                    targetUrls = parts[1].trim().split(",");
                 } else if (parts[0].trim().equals("timeout")) {
                     timeout = Integer.parseInt(parts[1].trim());
                 }
@@ -33,34 +35,38 @@ public class HealthCheckServlet extends HttpServlet {
         }
         reader.close();
 
-        HttpURLConnection connection = null;
-        try {
-            URL url = new URL(targetUrl);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(timeout * 1000);
-            connection.setReadTimeout(timeout * 1000);
+        for (String targetUrl : targetUrls) {
+            HttpURLConnection connection = null;
+            try {
+                URL url = new URL(targetUrl);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(timeout * 1000);
+                connection.setReadTimeout(timeout * 1000);
 
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String inputLine;
-                StringBuilder responseBody = new StringBuilder();
-                while ((inputLine = in.readLine()) != null) {
-                    responseBody.append(inputLine);
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    responseBody.append(targetUrl).append(": OK!\n"); // Append OK status
+                } else {
+                    allTargetsOK = false; // Set the flag to false if any target fails
+                    responseBody.append(targetUrl).append(": Not OK!\n"); // Append Not OK status
                 }
-                in.close();
-
-                response.getWriter().println(responseBody.toString());
-            } else {
-                response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-            }
-        } catch (IOException e) {
-            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
+            } catch (IOException e) {
+                allTargetsOK = false; // Set the flag to false if any target fails
+                responseBody.append(targetUrl).append(": Not OK! Error: ").append(e.getMessage()).append("\n"); // Append Not OK status with error message
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
         }
+
+        if (allTargetsOK) {
+            response.setStatus(HttpServletResponse.SC_OK);
+        } else {
+            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+        }
+
+        response.getWriter().println(responseBody.toString()); // Print the response body
     }
 }
