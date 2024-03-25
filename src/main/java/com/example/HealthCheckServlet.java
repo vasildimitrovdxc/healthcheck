@@ -16,7 +16,7 @@ import java.io.InputStreamReader;
 public class HealthCheckServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String configFilePath = "/opt/props/healthcheck.conf";
+        String configFilePath = "/opt/service/properties/healthcheck.conf";
         BufferedReader reader = new BufferedReader(new FileReader(configFilePath));
         String[] targetUrls = {};
         int timeout = 0;
