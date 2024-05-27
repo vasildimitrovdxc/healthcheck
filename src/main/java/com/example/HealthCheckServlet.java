@@ -67,6 +67,6 @@ public class HealthCheckServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         }
 
-        response.getWriter().println(responseBody.toString()); // Print the response body
+        response.getWriter().println(responseBody.toString());
     }
 }
