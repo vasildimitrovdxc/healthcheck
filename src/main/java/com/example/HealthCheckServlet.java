@@ -21,8 +21,8 @@ public class HealthCheckServlet extends HttpServlet {
         String[] targetUrls = {};
         int timeout = 0;
         String line;
-        boolean allTargetsOK = true; // Flag to track the overall status
-        StringBuilder responseBody = new StringBuilder(); // Collect the response body
+        boolean allTargetsOK = true;
+        StringBuilder responseBody = new StringBuilder();
         while ((line = reader.readLine()) != null) {
             String[] parts = line.split("=");
             if (parts.length == 2) {
@@ -46,14 +46,14 @@ public class HealthCheckServlet extends HttpServlet {
 
                 int responseCode = connection.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_OK) {
-                    responseBody.append(targetUrl).append(": OK!\n"); // Append OK status
+                    responseBody.append(targetUrl).append(": OK!\n");
                 } else {
-                    allTargetsOK = false; // Set the flag to false if any target fails
-                    responseBody.append(targetUrl).append(": Not OK!\n"); // Append Not OK status
+                    allTargetsOK = false;
+                    responseBody.append(targetUrl).append(": Not OK!\n");
                 }
             } catch (IOException e) {
-                allTargetsOK = false; // Set the flag to false if any target fails
-                responseBody.append(targetUrl).append(": Not OK! Error: ").append(e.getMessage()).append("\n"); // Append Not OK status with error message
+                allTargetsOK = false;
+                responseBody.append(targetUrl).append(": Not OK! Error: ").append(e.getMessage()).append("\n");
             } finally {
                 if (connection != null) {
                     connection.disconnect();
